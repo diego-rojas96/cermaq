@@ -1419,14 +1419,31 @@ async function saveProyecto(){
   const nombre=document.getElementById('pNombre').value.trim(),artefacto=document.getElementById('pArtefacto').value.trim();
   if(!nombre||!artefacto){alert('Nombre y artefacto son obligatorios.');return;}
   const projects=await gP(),editId=document.getElementById('editProjId').value;
+  let proj;
   if(editId){
-    const idx=projects.findIndex(p=>p.id===editId);
-    if(idx>=0) projects[idx]={...projects[idx],nombre,artefacto,tipo:document.getElementById('pTipo').value,responsable:document.getElementById('pResponsable').value,estado:document.getElementById('pEstado').value,inicio:document.getElementById('pInicio').value,fin:document.getElementById('pFin').value,tareas:JSON.parse(JSON.stringify(editTareas))};
+    proj=projects.find(p=>p.id===editId);
+    if(!proj){alert('Proyecto no encontrado.');return;}
+    Object.assign(proj,{nombre,artefacto,
+      tipo:document.getElementById('pTipo').value,
+      responsable:document.getElementById('pResponsable').value,
+      estado:document.getElementById('pEstado').value,
+      inicio:document.getElementById('pInicio').value,
+      fin:document.getElementById('pFin').value,
+      tareas:JSON.parse(JSON.stringify(editTareas))});
   } else {
     const mc=projects.reduce((m,p)=>Math.max(m,parseInt(p.code)||0),0);
-    proj={id:'p'+Date.now(),code:String(mc+1).padStart(4,'0'),nombre,artefacto,tipo:document.getElementById('pTipo').value,responsable:document.getElementById('pResponsable').value,estado:document.getElementById('pEstado').value,inicio:document.getElementById('pInicio').value,fin:document.getElementById('pFin').value,log:[],tareas:JSON.parse(JSON.stringify(editTareas))};
+    proj={id:'p'+Date.now(),code:String(mc+1).padStart(4,'0'),nombre,artefacto,
+      tipo:document.getElementById('pTipo').value,
+      responsable:document.getElementById('pResponsable').value,
+      estado:document.getElementById('pEstado').value,
+      inicio:document.getElementById('pInicio').value,
+      fin:document.getElementById('pFin').value,
+      log:[],tareas:JSON.parse(JSON.stringify(editTareas))};
   }
-  await saveOneP(proj);await populateFilters();closeModal('proyecto');await renderProyectos();
+  await saveOneP(proj);
+  await populateFilters();
+  closeModal('proyecto');
+  await renderProyectos();
 }
 
 
