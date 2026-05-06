@@ -398,7 +398,7 @@ button:focus {
           <option>Informe técnico</option><option>Certificado inspección</option>
           <option>Plano / esquema</option><option>Fotografías</option><option>Otro</option>
         </select>
-        <button class="btn btn-primary btn-sm edit-only hidden" onclick="openModal('documento')">+ SUBIR DOCUMENTO</button>
+        <button class="btn btn-primary btn-sm edit-only hidden" onclick="openModal('documento')">+ REGISTRAR DOCUMENTO</button>
       </div>
       <div id="docsList"></div>
     </div>
@@ -568,7 +568,7 @@ button:focus {
 <!-- MODAL DOCUMENTO -->
 <div class="modal-bg" id="modalDoc">
   <div class="modal">
-    <div class="modal-title">SUBIR DOCUMENTO</div>
+    <div class="modal-title">REGISTRAR DOCUMENTO</div>
     <div class="form-grid">
       <div class="field"><label>Proyecto asociado</label><select id="docProy"></select></div>
       <div class="field"><label>Tipo de documento</label><select id="docTipo"><option>Informe de visita</option><option>Reporte de avance</option><option>Informe técnico</option><option>Certificado inspección</option><option>Plano / esquema</option><option>Fotografías</option><option>Otro</option></select></div>
@@ -576,33 +576,19 @@ button:focus {
       <div class="field"><label>Autor / Inspector</label><input id="docAutor" type="text"></div>
       <div class="field full"><label>Descripción</label><textarea id="docDesc" rows="2" placeholder="Resumen del documento..."></textarea></div>
       <div class="field full">
-        <label>Fuente del archivo</label>
-        <div style="display:flex;gap:8px;margin-bottom:8px">
-          <button type="button" id="btnModoArchivo" class="btn btn-primary btn-sm" onclick="setModoDoc('archivo')" style="font-size:0.6rem">📁 SUBIR ARCHIVO</button>
-          <button type="button" id="btnModoUrl"     class="btn btn-ghost  btn-sm" onclick="setModoDoc('url')"     style="font-size:0.6rem">🔗 PEGAR LINK (OneDrive / SharePoint)</button>
-        </div>
-        <div id="modoArchivo">
-          <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-            <div id="uploadZoneText">Haz clic o arrastra un archivo aquí</div>
-            <div style="font-size:0.7rem;margin-top:4px">PDF, DOC, DOCX, JPG, PNG · máx. 10 MB</div>
-            <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display:none" onchange="onFileSelect(this)">
-          </div>
-          <div class="progress-upload" id="uploadProgress"><div class="progress-upload-fill" id="uploadProgressFill"></div></div>
-          <div id="fileSelectedMsg" style="font-family:var(--mono);font-size:0.62rem;color:var(--green);margin-top:5px;display:none"></div>
-        </div>
-        <div id="modoUrl" style="display:none">
-          <input id="docUrlDirecta" type="url" placeholder="https://mi-empresa.sharepoint.com/..." style="width:100%;box-sizing:border-box">
-          <div style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);margin-top:4px">Pega el link compartido de OneDrive, SharePoint, Google Drive u otro servicio</div>
-          <div id="docNombreManual" style="margin-top:6px">
-            <input id="docFileNameManual" type="text" placeholder="Nombre del archivo (ej: Informe_visita.pdf)" style="width:100%;box-sizing:border-box">
-          </div>
-        </div>
+        <label>URL del documento</label>
+        <input id="docUrlDirecta" type="url" placeholder="https://mi-empresa.sharepoint.com/..." style="width:100%;box-sizing:border-box">
+        <div style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);margin-top:4px">Link compartido de OneDrive, SharePoint, Google Drive u otro servicio</div>
+      </div>
+      <div class="field full">
+        <label>Nombre del archivo</label>
+        <input id="docFileNameManual" type="text" placeholder="Ej: Informe_visita_marzo.pdf" style="width:100%;box-sizing:border-box">
       </div>
     </div>
     <div id="uploadError" class="banner banner-warn" style="display:none;margin-top:0.5rem"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('doc')" id="btnCancelDoc">CANCELAR</button>
-      <button class="btn btn-primary" onclick="saveDocumento()" id="btnSaveDoc">SUBIR DOCUMENTO</button>
+      <button class="btn btn-primary" onclick="saveDocumento()" id="btnSaveDoc">GUARDAR DOCUMENTO</button>
     </div>
   </div>
 </div>
@@ -960,51 +946,31 @@ async function saveDocumento(){
   const fecha  = document.getElementById('docFecha').value;
   const autor  = document.getElementById('docAutor').value.trim();
   const desc   = document.getElementById('docDesc').value.trim();
+  const url    = document.getElementById('docUrlDirecta').value.trim();
+  let fileName = document.getElementById('docFileNameManual').value.trim();
+  const btn    = document.getElementById('btnSaveDoc');
+  const cBtn   = document.getElementById('btnCancelDoc');
+  const err    = document.getElementById('uploadError');
+
   if(!projId||!fecha){ alert('Selecciona proyecto y fecha.'); return; }
+  if(!url){ alert('Ingresa la URL del documento.'); return; }
+  if(!fileName) fileName = url.split('/').pop().split('?')[0] || 'documento';
 
-  const modoUrl = document.getElementById('modoUrl').style.display !== 'none';
-  const btn  = document.getElementById('btnSaveDoc');
-  const cBtn = document.getElementById('btnCancelDoc');
-  const err  = document.getElementById('uploadError');
   btn.disabled=true; cBtn.disabled=true; err.style.display='none';
-
   try {
-    let url='', fileName='', ext='doc', size='';
-
-    if(modoUrl) {
-      // Modo OneDrive / link directo
-      url      = document.getElementById('docUrlDirecta').value.trim();
-      fileName = document.getElementById('docFileNameManual').value.trim();
-      if(!url){ alert('Pega la URL del documento.'); return; }
-      if(!fileName) fileName = url.split('/').pop().split('?')[0] || 'documento';
-      ext = fileName.split('.').pop().toLowerCase();
-      if(!['pdf','doc','docx','jpg','jpeg','png','xlsx','ppt','pptx'].includes(ext)) ext='doc';
-    } else {
-      // Modo subida a Cloudinary
-      if(!selectedFile){ alert('Selecciona un archivo.'); return; }
-      btn.textContent='SUBIENDO...';
-      document.getElementById('uploadProgress').style.display='block';
-      document.getElementById('uploadProgressFill').style.width='0%';
-      const r = await uploadToCloudinary(selectedFile);
-      url      = r.url;
-      size     = r.size;
-      fileName = selectedFile.name;
-      ext      = fileName.split('.').pop().toLowerCase();
-    }
-
+    let ext = fileName.split('.').pop().toLowerCase();
     ext = ['pdf'].includes(ext)?'pdf':['jpg','jpeg','png'].includes(ext)?'img':'doc';
     const newDoc = {id:'d'+Date.now(),projId,tipo,fecha,
-      autor:autor||currentUser.nombre,desc,fileName,ext,size:size||'',url:url||''};
+      autor:autor||currentUser.nombre,desc,fileName,ext,size:'',url};
     await saveOneD(newDoc);
     closeModal('doc');
     await renderDocs();
   } catch(e) {
-    err.innerHTML='⚠ '+e.message+'. Verifica que el preset esté en modo Unsigned.';
+    err.innerHTML='⚠ '+e.message;
     err.style.display='flex';
   } finally {
-    btn.disabled=false; btn.textContent='SUBIR DOCUMENTO';
+    btn.disabled=false; btn.textContent='GUARDAR DOCUMENTO';
     cBtn.disabled=false;
-    document.getElementById('uploadProgress').style.display='none';
   }
 }
 
@@ -1379,17 +1345,10 @@ function openModal(t){
     document.getElementById('docFecha').value=new Date().toISOString().split('T')[0];
     document.getElementById('docDesc').value='';
     document.getElementById('docAutor').value=currentUser?currentUser.nombre:'';
-    selectedFile=null;
-    document.getElementById('fileInput').value='';
-    document.getElementById('fileSelectedMsg').style.display='none';
-    document.getElementById('uploadZoneText').textContent='Haz clic o arrastra un archivo aquí';
     document.getElementById('uploadError').style.display='none';
-    document.getElementById('uploadProgress').style.display='none';
-    document.getElementById('uploadProgressFill').style.width='0%';
     document.getElementById('btnSaveDoc').disabled=false;
     document.getElementById('docUrlDirecta').value='';
     document.getElementById('docFileNameManual').value='';
-    setModoDoc('archivo');
     document.getElementById('modalDoc').classList.add('open');
   }
   else if(t==='usuario'){
