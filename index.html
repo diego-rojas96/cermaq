@@ -261,7 +261,13 @@ tr.row-toggle:hover td { background:rgba(255,255,255,0.02); cursor:pointer; }
 .e-op   .equipo-dash-estado { color:var(--green); }
 .e-falla .equipo-dash-estado { color:var(--rust); }
 .e-mant .equipo-dash-estado { color:var(--amber); }
-.e-nd   .equipo-dash-estado { color:var(--muted); }
+.e-nd    .equipo-dash-estado { color:var(--muted); }
+.e-def   .equipo-dash-card::before, .e-def .equipo-dash-estado   { border-top-color:#8e44ad; color:#8e44ad; }
+.e-proc  .equipo-dash-card::before, .e-proc .equipo-dash-estado  { border-top-color:var(--cyan); color:var(--cyan); }
+.e-av    .equipo-dash-card::before, .e-av .equipo-dash-estado    { border-top-color:#f39c12; color:#f39c12; }
+.e-term  .equipo-dash-card::before, .e-term .equipo-dash-estado  { border-top-color:#27ae60; color:#27ae60; }
+.e-rec   .equipo-dash-card::before, .e-rec .equipo-dash-estado   { border-top-color:#00b4d8; color:#00b4d8; }
+.e-listo .equipo-dash-card::before, .e-listo .equipo-dash-estado { border-top-color:#2ecc71; color:#2ecc71; }
 
 @media(max-width:800px) {
   .content { padding:0.75rem; }
@@ -507,7 +513,8 @@ button:focus {
     <div class="modal-title" id="mProjTitle">NUEVO PROYECTO</div>
     <input type="hidden" id="editProjId">
     <div class="form-grid">
-      <div class="field full"><label>Nombre del proyecto</label><input id="pNombre" type="text" placeholder="Carena Mayor LPC-04"></div>
+      <div class="field"><label>Nombre del proyecto</label><input id="pNombre" type="text" placeholder="Carena Mayor LPC-04"></div>
+      <div class="field"><label>Código</label><input id="pCode" type="text" placeholder="0001" style="font-family:var(--mono)"></div>
       <div class="field"><label>Artefacto</label><input id="pArtefacto" type="text" placeholder="LPC-04"></div>
       <div class="field"><label>Tipo de carena</label><select id="pTipo"><option>Carena normativa</option><option>Mantención en muelle</option><option>Varada programada</option></select></div>
       <div class="field"><label>Responsable</label><input id="pResponsable" type="text" placeholder="TN García"></div>
@@ -1108,10 +1115,14 @@ async function renderProyectos(){
     tr.innerHTML=`
       <td style="color:var(--muted);font-size:0.65rem;width:18px">${open?'▼':'▶'}</td>
       <td style="font-family:var(--mono);font-size:0.7rem;color:var(--cyan)">#${p.code}</td>
-      <td style="font-weight:600">${p.nombre}</td>
-      <td style="font-family:var(--mono);font-size:0.7rem;color:var(--muted)">${p.artefacto}</td>
+      <td style="font-weight:600">${p.artefacto}<div style="font-size:0.7rem;color:var(--muted);font-weight:400">${p.nombre}</div></td>
+      <td></td>
       <td style="font-size:0.78rem">${p.responsable}</td>
-      <td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:${lp}%;background:${col}"></div></div><div class="prog-txt">${lp}%${tareas.length?` (${tareas.filter(t=>t.done).length}/${tareas.length} tareas)`:''}</div></div></td>
+      <td>
+        <div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:${lp}%;background:${col}"></div></div>
+        <div class="prog-txt">Tareas: ${lp}%${tareas.length?' ('+tareas.filter(t=>t.done).length+'/'+tareas.length+')':''}</div></div>
+        ${(p.equipos&&p.equipos.length)?'<div style="margin-top:3px;display:flex;align-items:center;gap:5px"><div style="flex:1;height:3px;background:var(--steel);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+calcPctEquipos(p.equipos)+'%;background:var(--cyan)"></div></div><span style="font-family:var(--mono);font-size:0.58rem;color:var(--cyan)">Eq: '+calcPctEquipos(p.equipos)+'%</span></div>':''}
+      </td>
       <td><span class="pill pill-${p.estado}">${p.estado.replace('_',' ')}</span></td>
       <td style="font-family:var(--mono);font-size:0.65rem;color:var(--muted)">${p.inicio}</td>
       <td style="font-family:var(--mono);font-size:0.65rem;color:var(--muted)">${p.fin}</td>
@@ -1373,7 +1384,7 @@ function openModal(t){
   if(t==='proyecto'){
     document.getElementById('editProjId').value='';
     document.getElementById('mProjTitle').textContent='NUEVO PROYECTO';
-    ['pNombre','pArtefacto','pResponsable'].forEach(id=>document.getElementById(id).value='');
+    ['pNombre','pCode','pArtefacto','pResponsable'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('pInicio').value=new Date().toISOString().split('T')[0];
     document.getElementById('pFin').value='';
     editTareas=[];
@@ -1403,6 +1414,7 @@ async function editProyecto(id){
   document.getElementById('editProjId').value=id;
   document.getElementById('mProjTitle').textContent='EDITAR PROYECTO';
   document.getElementById('pNombre').value=p.nombre;
+  document.getElementById('pCode').value=p.code||'';
   document.getElementById('pArtefacto').value=p.artefacto;
   document.getElementById('pTipo').value=p.tipo;
   document.getElementById('pResponsable').value=p.responsable;
@@ -1422,7 +1434,9 @@ async function saveProyecto(){
   if(editId){
     proj=projects.find(p=>p.id===editId);
     if(!proj){alert('Proyecto no encontrado.');return;}
+    const codeEdit=document.getElementById('pCode').value.trim();
     Object.assign(proj,{nombre,artefacto,
+      code:codeEdit||proj.code,
       tipo:document.getElementById('pTipo').value,
       responsable:document.getElementById('pResponsable').value,
       estado:document.getElementById('pEstado').value,
@@ -1431,7 +1445,8 @@ async function saveProyecto(){
       tareas:JSON.parse(JSON.stringify(editTareas))});
   } else {
     const mc=projects.reduce((m,p)=>Math.max(m,parseInt(p.code)||0),0);
-    proj={id:'p'+Date.now(),code:String(mc+1).padStart(4,'0'),nombre,artefacto,
+    const codeInput=document.getElementById('pCode').value.trim();
+    proj={id:'p'+Date.now(),code:codeInput||String(mc+1).padStart(4,'0'),nombre,artefacto,
       tipo:document.getElementById('pTipo').value,
       responsable:document.getElementById('pResponsable').value,
       estado:document.getElementById('pEstado').value,
@@ -1461,7 +1476,7 @@ async function renderDocs(){
   Object.keys(byProj).forEach(pid=>{
     const proj=projects.find(p=>p.id===pid);
     const sec=document.createElement('div');sec.style.marginBottom='1.5rem';
-    sec.innerHTML=`<div style="font-family:var(--mono);font-size:0.6rem;color:var(--cyan);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">${proj?proj.nombre:'PROYECTO DESCONOCIDO'}</div>`;
+    sec.innerHTML=`<div style="font-family:var(--mono);font-size:0.6rem;color:var(--cyan);letter-spacing:2px;text-transform:uppercase;margin-bottom:0.8rem;padding-bottom:0.4rem;border-bottom:1px solid var(--border)">${proj?proj.code+' · '+proj.artefacto+(proj.nombre?' — '+proj.nombre:''):'SIN PROYECTO'}</div>`;
     byProj[pid].forEach(d=>{
       const div=document.createElement('div');div.className='file-item';div.style.marginBottom='5px';
 
@@ -1551,13 +1566,14 @@ async function renderTabEquipos(){
     const open = expandedEquipos[p.id];
 
     // Resumen de estados de equipos para la fila
-    const hayFalla  = equipos.some(e=>e.estado==='FALLA');
-    const hayMant   = equipos.some(e=>e.estado==='MANTENCION');
-    const todosOp   = equipos.every(e=>e.estado==='OPERATIVO');
-    const resEq = hayFalla  ? {label:'CON FALLA',    color:'var(--rust)'}
-                : hayMant   ? {label:'EN MANTENCIÓN', color:'var(--amber)'}
-                : todosOp   ? {label:'OPERATIVOS',    color:'var(--green)'}
-                :             {label:'SIN DATOS',     color:'var(--muted)'};
+    const pctEq = calcPctEquipos(equipos);
+    const resEq = pctEq===100 ? {label:'LISTO',        color:'#2ecc71'}
+                : pctEq>=80   ? {label:'RECIBIDO',      color:'#00b4d8'}
+                : pctEq>=60   ? {label:'TERMINADO',     color:'#27ae60'}
+                : pctEq>=50   ? {label:'AVANZADO',      color:'#f39c12'}
+                : pctEq>=20   ? {label:'EN PROCESO',    color:'var(--cyan)'}
+                : pctEq>=10   ? {label:'POR DEFINIR',   color:'#8e44ad'}
+                :               {label:'SIN GESTIONAR', color:'var(--muted)'};
 
     // Fila principal
     const tr = document.createElement('tr');
@@ -1566,11 +1582,19 @@ async function renderTabEquipos(){
     tr.innerHTML = `
       <td style="color:var(--muted);font-size:0.65rem">${open?'▼':'▶'}</td>
       <td style="font-family:var(--mono);font-size:0.7rem;color:var(--cyan)">#${p.code}</td>
-      <td style="font-weight:600">${p.nombre}</td>
-      <td style="font-family:var(--mono);font-size:0.7rem;color:var(--muted)">${p.artefacto}</td>
+      <td style="font-weight:600">${p.artefacto}<div style="font-size:0.7rem;color:var(--muted);font-weight:400">${p.nombre}</div></td>
+      <td></td>
       <td style="font-size:0.78rem">${p.responsable}</td>
       <td><span class="pill pill-${p.estado}" style="font-size:0.62rem">${p.estado.replace('_',' ')}</span></td>
-      <td><span style="font-family:var(--mono);font-size:0.65rem;font-weight:600;color:${resEq.color}">${resEq.label}</span></td>`;
+        <td>
+        <span style="font-family:var(--mono);font-size:0.65rem;font-weight:600;color:${resEq.color}">${resEq.label}</span>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+          <div style="flex:1;height:5px;background:var(--steel);border-radius:2px;overflow:hidden">
+            <div style="height:100%;width:${pctEq}%;background:${resEq.color}"></div>
+          </div>
+          <span style="font-family:var(--mono);font-size:0.6rem;color:${resEq.color}">${pctEq}%</span>
+        </div>
+      </td>`;
     tbody.appendChild(tr);
 
     // Fila expandida
@@ -1613,7 +1637,7 @@ async function renderTabEquipos(){
           sel.onchange=async()=>{ equipos[idx].estado=sel.value; await saveEquiposProj(p.id,equipos); await renderTabEquipos(); };
           tdEst.appendChild(sel);
         } else {
-          tdEst.innerHTML=`<span style="font-family:var(--mono);font-size:0.65rem;color:${eq.estado==='OPERATIVO'?'var(--green)':eq.estado==='FALLA'?'var(--rust)':eq.estado==='MANTENCION'?'var(--amber)':'var(--muted)'}">${estadoLabel(eq.estado)}</span>`;
+          const eObj2=getEstadoEquipo(eq.estado); tdEst.innerHTML=`<span style="font-family:var(--mono);font-size:0.65rem;font-weight:600;color:var(--cyan)">${eObj2.label} (${eObj2.pct}%)</span>`;
         }
 
         const tdResp = document.createElement('td');
@@ -1970,16 +1994,34 @@ async function saveLog(){
 // ── EQUIPOS ──────────────────────────────────────────────────────────────────
 const EQUIPOS_LISTA = [
   'Generadores','Planta desalinizadora','Planta de tratamiento',
-  'Sistema de alimentación','Avituallamiento','Insumos de seguridad'
+  'Sistema de alimentación','Avituallamiento','Insumos de seguridad',
+  'Estanques','Ensilaje'
 ];
 function equiposDefault(){
-  return EQUIPOS_LISTA.map(n=>({nombre:n,estado:'ND',obs:'',responsable:''}));
+  return EQUIPOS_LISTA.map(n=>({nombre:n,estado:'NO_GESTIONADO',obs:'',responsable:''}));
 }
-function estadoClase(e){
-  return e==='OPERATIVO'?'e-op':e==='FALLA'?'e-falla':e==='MANTENCION'?'e-mant':'e-nd';
+// Estados equipos con ponderación
+const ESTADOS_EQUIPO = [
+  {val:'NO_GESTIONADO', label:'NO (SIN GESTIONAR)', pct:0,  cls:'e-nd'},
+  {val:'POR_DEFINIR',   label:'POR DEFINIR',        pct:10, cls:'e-def'},
+  {val:'EN_PROCESO',    label:'EN PROCESO',          pct:20, cls:'e-proc'},
+  {val:'AVANZADO',      label:'AVANZADO',            pct:50, cls:'e-av'},
+  {val:'TERMINADO',     label:'TERMINADO',           pct:60, cls:'e-term'},
+  {val:'RECIBIDO',      label:'RECIBIDO',            pct:80, cls:'e-rec'},
+  {val:'LISTO',         label:'LISTO',               pct:100,'cls':'e-listo'},
+];
+function getEstadoEquipo(val){
+  return ESTADOS_EQUIPO.find(e=>e.val===val) || ESTADOS_EQUIPO[0];
 }
-function estadoLabel(e){
-  return e==='OPERATIVO'?'OPERATIVO':e==='FALLA'?'EN FALLA':e==='MANTENCION'?'MANTENCIÓN':'N/D';
+function estadoClase(val){ return getEstadoEquipo(val).cls; }
+function estadoLabel(val){ return getEstadoEquipo(val).label; }
+function estadoPct(val)  { return getEstadoEquipo(val).pct;   }
+
+// Calcular % promedio de equipos de un proyecto
+function calcPctEquipos(equipos){
+  if(!equipos||!equipos.length) return 0;
+  const sum = equipos.reduce((acc,eq)=>acc+estadoPct(eq.estado),0);
+  return Math.round(sum/equipos.length);
 }
 async function renderEquiposEnProyecto(projId, equipos, canEdit){
   const container = document.getElementById('equipos-proj-'+projId);
