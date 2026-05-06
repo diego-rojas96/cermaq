@@ -678,7 +678,19 @@ async function supa(path, method='GET', body=null){
     if(body) opts.body = JSON.stringify(body);
     const r = await fetch(SUPA_URL + '/rest/v1/' + path, opts);
     if(!r.ok){
-      console.error('Supabase error:', method, path, await r.text());
+      const errTxt = await r.text();
+      console.error('Supabase error:', method, path, errTxt);
+      // Mostrar en UI si es POST de documentos
+      if(method==='POST' && path.startsWith('documentos')){
+        const errEl = document.getElementById('uploadError');
+        if(errEl){
+          try{
+            const errJson = JSON.parse(errTxt);
+            errEl.innerHTML = '⚠ Supabase: ' + (errJson.message||errJson.hint||errTxt);
+          } catch { errEl.innerHTML = '⚠ Supabase: ' + errTxt; }
+          errEl.style.display = 'flex';
+        }
+      }
       return null;
     }
     const txt = await r.text();
@@ -742,11 +754,28 @@ async function deleteOneP(id){
 async function gD(){
   if(STORAGE_MODE==='supabase'){
     const rows = await supa('documentos?order=created_at.asc&select=*');
-    if(rows!==null) return rows.map(r=>({
-      id:r.id, projId:r.proj_id, tipo:r.tipo, fecha:r.fecha,
-      autor:r.autor, desc:r.descripcion, fileName:r.file_name,
-      ext:r.ext, size:r.size, url:r.url
-    }));
+    if(rows!==null){
+      // Combinar con localStorage por si algún doc se guardó en fallback
+      const local = lsGet('cn_d_v5')||[];
+      const supaIds = new Set(rows.map(r=>r.id));
+      const supaRows = rows.map(r=>({
+        id:r.id, projId:r.proj_id, tipo:r.tipo, fecha:r.fecha,
+        autor:r.autor, desc:r.descripcion, fileName:r.file_name,
+        ext:r.ext, size:r.size, url:r.url
+      }));
+      // Agregar docs locales que no están en Supabase
+      const localOnly = local.filter(d=>!supaIds.has(d.id));
+      if(localOnly.length>0){
+        // Intentar migrar a Supabase
+        for(const d of localOnly){
+          await saveOneD(d);
+        }
+        // Limpiar localStorage después de migrar
+        const migratedIds = new Set(localOnly.map(d=>d.id));
+        lsSet('cn_d_v5', local.filter(d=>!migratedIds.has(d.id)));
+      }
+      return supaRows.concat(localOnly);
+    }
   }
   return lsGet('cn_d_v5')||[];
 }
@@ -755,11 +784,18 @@ async function sD(docs){
 }
 async function saveOneD(d){
   if(STORAGE_MODE==='supabase'){
-    await supa('documentos', 'POST', {
-      id:d.id, proj_id:d.projId, tipo:d.tipo, fecha:d.fecha,
-      autor:d.autor, descripcion:d.desc, file_name:d.fileName,
-      ext:d.ext, size:d.size||'', url:d.url||''
+    const result = await supa('documentos', 'POST', {
+      id:d.id, proj_id:d.projId, tipo:d.tipo, fecha:d.fecha||'',
+      autor:d.autor||'', descripcion:d.desc||'', file_name:d.fileName||'sin nombre',
+      ext:d.ext||'doc', size:d.size||'', url:d.url||''
     });
+    if(result === null){
+      console.error('saveOneD: fallo al guardar en Supabase, guardando en localStorage');
+      // Fallback a localStorage si Supabase falla
+      const all = lsGet('cn_d_v5')||[];
+      all.push(d);
+      lsSet('cn_d_v5', all);
+    }
   } else {
     const all = lsGet('cn_d_v5')||[];
     all.push(d);
@@ -959,15 +995,19 @@ async function saveDocumento(){
   btn.disabled=true; cBtn.disabled=true; err.style.display='none';
   try {
     let ext = fileName.split('.').pop().toLowerCase();
-    ext = ['pdf'].includes(ext)?'pdf':['jpg','jpeg','png'].includes(ext)?'img':'doc';
+    if(!['pdf','doc','docx','jpg','jpeg','png','xlsx','ppt','pptx'].includes(ext)) ext='doc';
+    ext = ext==='pdf'?'pdf':['jpg','jpeg','png'].includes(ext)?'img':'doc';
     const newDoc = {id:'d'+Date.now(),projId,tipo,fecha,
       autor:autor||currentUser.nombre,desc,fileName,ext,size:'',url};
+    btn.textContent='GUARDANDO...';
     await saveOneD(newDoc);
+    flashMsg('Documento guardado correctamente','success');
     closeModal('doc');
     await renderDocs();
   } catch(e) {
-    err.innerHTML='⚠ '+e.message;
+    err.innerHTML='⚠ Error al guardar: '+e.message;
     err.style.display='flex';
+    console.error('saveDocumento error:', e);
   } finally {
     btn.disabled=false; btn.textContent='GUARDAR DOCUMENTO';
     cBtn.disabled=false;
