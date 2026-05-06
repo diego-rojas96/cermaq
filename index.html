@@ -179,7 +179,7 @@ tr.row-toggle:hover td { background:rgba(255,255,255,0.02); cursor:pointer; }
 /* EXPAND */
 .expand-row td { padding:0; background:rgba(0,0,0,0.2); }
 .expand-content { padding:1.2rem 1.5rem; }
-.expand-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+.expand-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1.5rem; }
 .exp-label { font-family:var(--mono); font-size:0.58rem; color:var(--cyan); letter-spacing:2px; text-transform:uppercase; margin-bottom:0.7rem; border-bottom:1px solid var(--border); padding-bottom:0.35rem; }
 .log-entry { display:flex; gap:10px; padding:0.5rem 0; border-bottom:1px solid rgba(30,58,95,0.4); font-size:0.78rem; }
 .log-entry:last-child { border-bottom:none; }
@@ -237,17 +237,75 @@ tr.row-toggle:hover td { background:rgba(255,255,255,0.02); cursor:pointer; }
 .excel-drop-hint { border:1px dashed var(--border); padding:0.6rem 1rem; text-align:center; font-family:var(--mono); font-size:0.62rem; color:var(--muted); cursor:pointer; transition:all 0.2s; }
 .excel-drop-hint:hover { border-color:var(--cyan); color:var(--cyan); background:rgba(0,180,216,0.04); }
 
+/* ── EQUIPOS ─────────────────────────────────────────── */
+.equipos-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:0.5rem; }
+.equipo-card { background:var(--navy); border:1px solid var(--border); padding:0.7rem 0.8rem; border-radius:2px; }
+.equipo-nombre { font-family:var(--mono); font-size:0.58rem; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:0.5rem; }
+.equipo-estado { display:flex; gap:4px; margin-bottom:0.5rem; flex-wrap:wrap; }
+.equipo-estado-btn { font-family:var(--mono); font-size:0.55rem; padding:0.2rem 0.5rem; border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; letter-spacing:0.5px; transition:all 0.15s; }
+.equipo-estado-btn.activo-OPERATIVO { background:rgba(39,174,96,0.2); border-color:var(--green); color:var(--green); }
+.equipo-estado-btn.activo-FALLA     { background:rgba(231,76,60,0.2);  border-color:var(--rust);  color:var(--rust);  }
+.equipo-estado-btn.activo-MANTENCION{ background:rgba(243,156,18,0.2); border-color:var(--amber); color:var(--amber); }
+.equipo-obs { font-family:var(--sans); font-size:0.72rem; background:var(--deep); border:1px solid var(--border); color:var(--text); padding:0.3rem 0.5rem; width:100%; box-sizing:border-box; resize:none; }
+.equipo-obs:focus { outline:none; border-color:var(--cyan); }
+/* Dashboard equipos */
+.equipos-dash { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-bottom:1.5rem; }
+.equipo-dash-card { background:var(--card); border:1px solid var(--border); padding:0.6rem 0.8rem; text-align:center; position:relative; overflow:hidden; }
+.equipo-dash-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+.equipo-dash-card.e-op::before    { background:var(--green); }
+.equipo-dash-card.e-falla::before { background:var(--rust); }
+.equipo-dash-card.e-mant::before  { background:var(--amber); }
+.equipo-dash-card.e-nd::before    { background:var(--border); }
+.equipo-dash-nombre { font-family:var(--mono); font-size:0.5rem; color:var(--muted); letter-spacing:1px; text-transform:uppercase; margin-bottom:0.3rem; line-height:1.3; }
+.equipo-dash-estado { font-family:var(--mono); font-size:0.55rem; font-weight:600; }
+.e-op   .equipo-dash-estado { color:var(--green); }
+.e-falla .equipo-dash-estado { color:var(--rust); }
+.e-mant .equipo-dash-estado { color:var(--amber); }
+.e-nd   .equipo-dash-estado { color:var(--muted); }
+
 @media(max-width:800px) {
-  .stats-grid { grid-template-columns:1fr 1fr; }
+  .content { padding:0.75rem; }
+  .topbar { padding:0 0.75rem; gap:0.5rem; height:48px; }
+  .topbar-title { font-size:0.75rem; letter-spacing:1px; }
+  .week-badge { display:none; }
+  .stats-grid { grid-template-columns:1fr 1fr; gap:1px; }
+  .stat-value { font-size:1.6rem; }
+  .stat-cell { padding:0.7rem 0.9rem; }
+  .nav-tabs { padding:0 0.5rem; overflow-x:auto; white-space:nowrap; -webkit-overflow-scrolling:touch; }
+  .nav-tab { padding:0.65rem 0.8rem; font-size:0.6rem; }
+  .toolbar { gap:0.5rem; flex-wrap:wrap; }
+  .filter-group { order:3; width:100%; display:grid; grid-template-columns:repeat(3,1fr); }
+  .filter-btn { border-right:none; border-bottom:1px solid var(--border); padding:0.5rem 0.4rem; font-size:0.55rem; }
+  .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  table { min-width:580px; font-size:0.75rem; }
+  td, th { padding:0.5rem 0.7rem; }
   .expand-grid { grid-template-columns:1fr; }
+  .expand-content { padding:0.8rem; }
   .form-grid { grid-template-columns:1fr; }
   .form-grid .full { grid-column:1; }
+  .modal { padding:1.1rem; margin:0.5rem; }
+  .equipos-grid { grid-template-columns:1fr 1fr; }
+  .equipos-dash { grid-template-columns:repeat(3,1fr); }
+}
+@media(max-width:480px) {
+  .topbar-title { display:none; }
+  .stats-grid { grid-template-columns:1fr 1fr; }
+  .stat-value { font-size:1.4rem; }
+  .filter-group { grid-template-columns:repeat(2,1fr); }
+  .equipos-grid { grid-template-columns:1fr; }
+  .equipos-dash { grid-template-columns:repeat(2,1fr); }
+  .modal { margin:0; border-radius:0; }
+  .nav-tab { padding:0.6rem 0.65rem; font-size:0.55rem; }
+  .content { padding:0.5rem; }
 }
 
 button:focus {
   outline: 2px solid var(--cyan);
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
 
@@ -294,6 +352,10 @@ button:focus {
     <!-- TAB PROYECTOS -->
     <div id="tab-proyectos">
       <div class="stats-grid" id="statsGrid"></div>
+      <div id="equiposDash" style="display:none;margin-bottom:1.5rem">
+        <div style="font-family:var(--mono);font-size:0.58rem;color:var(--muted);letter-spacing:2px;margin-bottom:0.5rem">ESTADO DE EQUIPOS</div>
+        <div class="equipos-dash" id="equiposDashGrid"></div>
+      </div>
       <div class="toolbar">
         <div class="toolbar-title">PROYECTOS DE CARENA</div>
         <div class="filter-group" id="filterGroup">
@@ -303,7 +365,11 @@ button:focus {
           <button class="filter-btn" onclick="setFilter('PLANIFICADO',this)">PLANIFICADOS</button>
           <button class="filter-btn" onclick="setFilter('COMPLETADO',this)">COMPLETADOS</button>
         </div>
-        <button class="btn btn-primary btn-sm edit-only hidden" onclick="openModal('proyecto')">+ NUEVO PROYECTO</button>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="exportarExcel()" title="Exportar a Excel" style="font-size:0.6rem">📊 EXCEL</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportarPDF()" title="Exportar a PDF" style="font-size:0.6rem">📄 PDF</button>
+          <button class="btn btn-primary btn-sm edit-only hidden" onclick="openModal('proyecto')">+ NUEVO PROYECTO</button>
+        </div>
       </div>
       <div class="table-wrap">
         <table>
@@ -366,6 +432,21 @@ button:focus {
       </div>
     </div>
 
+    <!-- BACKUP -->
+    <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)">
+      <div class="toolbar-title" style="margin-bottom:0.8rem;font-size:1rem">📦 EXPORTAR / IMPORTAR DATOS</div>
+      <div style="font-family:var(--mono);font-size:0.62rem;color:var(--muted);margin-bottom:0.8rem">Exporta para respaldar tus datos o importa desde una versión anterior.</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="btn btn-primary btn-sm" onclick="exportarDatos()">⬇ EXPORTAR JSON</button>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer">
+          ⬆ IMPORTAR JSON
+          <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importarDatos(this)">
+        </label>
+        <span id="importMsg" style="font-family:var(--mono);font-size:0.65rem;color:var(--green);display:none"></span>
+      </div>
+    </div>
+    </div>
+
   </div>
 </div>
 
@@ -423,7 +504,7 @@ button:focus {
     <input type="hidden" id="logProjId">
     <div class="form-grid">
       <div class="field"><label>Semana</label><input id="logSem" type="text" placeholder="SEM 15/2025"></div>
-      <div class="field"><label>% Avance acumulado</label><input id="logPct" type="number" min="0" max="100"></div>
+      <div class="field"><label>% Avance (calculado desde tareas)</label><input id="logPct" type="text" readonly style="background:var(--steel);color:var(--cyan);font-weight:600;cursor:default"></div>
       <div class="field full"><label>Descripción del avance</label><textarea id="logTexto" rows="4" placeholder="Trabajos realizados esta semana..."></textarea></div>
     </div>
     <div class="modal-actions">
@@ -592,7 +673,7 @@ async function sP(projects){
     await supa('proyectos', 'POST', {
       id:p.id, code:p.code, nombre:p.nombre, artefacto:p.artefacto,
       tipo:p.tipo, responsable:p.responsable, estado:p.estado,
-      inicio:p.inicio, fin:p.fin, log:p.log||[], tareas:p.tareas||[]
+      inicio:p.inicio, fin:p.fin, log:p.log||[], tareas:p.tareas||[], equipos:p.equipos||[]
     });
   }
 }
@@ -602,7 +683,7 @@ async function saveOneP(p){
     await supa('proyectos', 'POST', {
       id:p.id, code:p.code, nombre:p.nombre, artefacto:p.artefacto,
       tipo:p.tipo, responsable:p.responsable, estado:p.estado,
-      inicio:p.inicio, fin:p.fin, log:p.log||[], tareas:p.tareas||[]
+      inicio:p.inicio, fin:p.fin, log:p.log||[], tareas:p.tareas||[], equipos:p.equipos||[]
     });
   } else {
     const all = lsGet('cn_p_v5')||[];
@@ -917,6 +998,7 @@ async function initApp(){
   renderStats(p);
   await renderProyectos();
   await populateFilters();
+  await renderEquiposDash();
 }
 
 // 5. UI / TABLAS
@@ -959,7 +1041,7 @@ async function renderProyectos(){
   }
   list.forEach(p=>{
     const tareas=p.tareas||[];
-    const lp=tareas.length>0?calcPct(tareas):(p.log&&p.log.length>0?p.log[p.log.length-1].pct:0);
+    const lp=calcPct(tareas); // % siempre desde checklist de tareas
     const col=lp>=80?'#27ae60':lp>=50?'#00b4d8':lp>=20?'#f39c12':'#e74c3c';
     const open=expandedRows[p.id];
 
@@ -1027,7 +1109,7 @@ async function renderProyectos(){
 
       const logHTML=!p.log||p.log.length===0
         ? '<div style="font-family:var(--mono);font-size:0.65rem;color:var(--muted)">SIN ENTRADAS AÚN</div>'
-        : p.log.map(l=>`<div class="log-entry"><span class="log-week">${l.sem}</span><span style="flex:1">${l.texto}</span><span class="log-pct">▲ ${l.pct}%</span></div>`).join('');
+        : p.log.map((l,li)=>`<div class="log-entry" style="gap:6px"><span class="log-week">${l.sem}</span><span style="flex:1">${l.texto}</span><span class="log-pct">▲ ${l.pct}%</span>${canEdit?`<button class="btn btn-danger" style="padding:1px 6px;font-size:0.6rem" onclick="event.stopPropagation();eliminarLog('${p.id}',${li})">✕</button>`:''}</div>`).join('');
 
       const trE=document.createElement('tr');
       trE.className='expand-row';
@@ -1042,6 +1124,10 @@ async function renderProyectos(){
           ${logHTML}
           <div class="exp-label" style="margin-top:1rem">DOCUMENTOS ADJUNTOS (${pd.length})</div>
           <div id="docsList-proj-${p.id}"></div>
+        </div>
+        <div>
+          <div class="exp-label">ESTADO DE EQUIPOS</div>
+          <div class="equipos-grid" id="equipos-proj-${p.id}"></div>
         </div>
       </div></div></td>`;
       tbody.appendChild(trE);
@@ -1070,6 +1156,9 @@ async function renderProyectos(){
           tareasContainer.appendChild(tDiv);
         });
       }
+
+      // Renderizar equipos del proyecto
+      renderEquiposEnProyecto(p.id, p.equipos, canEdit);
 
       // Renderizar docs del proyecto con createElement (evita problemas de escape)
       const docsContainer=trE.querySelector(`#docsList-proj-${p.id}`);
@@ -1291,9 +1380,9 @@ async function saveProyecto(){
     if(idx>=0) projects[idx]={...projects[idx],nombre,artefacto,tipo:document.getElementById('pTipo').value,responsable:document.getElementById('pResponsable').value,estado:document.getElementById('pEstado').value,inicio:document.getElementById('pInicio').value,fin:document.getElementById('pFin').value,tareas:JSON.parse(JSON.stringify(editTareas))};
   } else {
     const mc=projects.reduce((m,p)=>Math.max(m,parseInt(p.code)||0),0);
-    projects.push({id:'p'+Date.now(),code:String(mc+1).padStart(4,'0'),nombre,artefacto,tipo:document.getElementById('pTipo').value,responsable:document.getElementById('pResponsable').value,estado:document.getElementById('pEstado').value,inicio:document.getElementById('pInicio').value,fin:document.getElementById('pFin').value,log:[],tareas:JSON.parse(JSON.stringify(editTareas))});
+    proj={id:'p'+Date.now(),code:String(mc+1).padStart(4,'0'),nombre,artefacto,tipo:document.getElementById('pTipo').value,responsable:document.getElementById('pResponsable').value,estado:document.getElementById('pEstado').value,inicio:document.getElementById('pInicio').value,fin:document.getElementById('pFin').value,log:[],tareas:JSON.parse(JSON.stringify(editTareas))};
   }
-  await sP(projects);await populateFilters();closeModal('proyecto');await renderProyectos();
+  await saveOneP(proj);await populateFilters();closeModal('proyecto');await renderProyectos();
 }
 
 
@@ -1381,6 +1470,17 @@ function aplicarPermisos() {
 
 
 
+
+async function eliminarLog(projId, idx){
+  if(!confirm('¿Eliminar esta entrada del registro?')) return;
+  const projects = await gP();
+  const p = projects.find(x=>x.id===projId);
+  if(!p||!p.log) return;
+  p.log.splice(idx, 1);
+  await saveOneP(p);
+  await renderProyectos();
+}
+
 async function openLogModal(projId){
   const projects = await gP();
   const p = projects.find(x => x.id === projId);
@@ -1390,9 +1490,10 @@ async function openLogModal(projId){
   if(tareas.length > 0) pctActual = calcPct(tareas);
   else if(p && p.log && p.log.length > 0) pctActual = p.log[p.log.length-1].pct;
 
+  const pctCalc = calcPct(tareas);
   document.getElementById('logProjId').value = projId;
   document.getElementById('logSem').value    = getWeekLabel();
-  document.getElementById('logPct').value    = pctActual;
+  document.getElementById('logPct').value    = pctCalc + '%';
   document.getElementById('logTexto').value  = '';
   // Mostrar nombre proyecto en título
   const title = document.getElementById('modalLogTitle');
@@ -1403,17 +1504,228 @@ async function openLogModal(projId){
 async function saveLog(){
   const projId = document.getElementById('logProjId').value;
   const sem    = document.getElementById('logSem').value.trim();
-  const pct    = parseInt(document.getElementById('logPct').value) || 0;
   const texto  = document.getElementById('logTexto').value.trim();
   if(!sem){ alert('Indica la semana.'); return; }
   const projects = await gP();
-  const idx = projects.findIndex(p => p.id === projId);
-  if(idx < 0) return;
-  if(!projects[idx].log) projects[idx].log = [];
-  projects[idx].log.push({ sem, pct, texto, fecha: new Date().toISOString().split('T')[0] });
-  await sP(projects);
+  const p = projects.find(x => x.id === projId);
+  if(!p) return;
+  if(!p.log) p.log = [];
+  // % se calcula siempre desde tareas — no se guarda manual
+  const pct = calcPct(p.tareas||[]);
+  p.log.push({ sem, pct, texto, fecha: new Date().toISOString().split('T')[0] });
+  await saveOneP(p);
   closeModal('log');
   await renderProyectos();
+}
+
+
+// ── EQUIPOS ──────────────────────────────────────────────────────────────────
+const EQUIPOS_LISTA = [
+  'Generadores','Planta desalinizadora','Planta de tratamiento',
+  'Sistema de alimentación','Avituallamiento','Insumos de seguridad'
+];
+function equiposDefault(){
+  return EQUIPOS_LISTA.map(n=>({nombre:n,estado:'ND',obs:''}));
+}
+function estadoClase(e){
+  return e==='OPERATIVO'?'e-op':e==='FALLA'?'e-falla':e==='MANTENCION'?'e-mant':'e-nd';
+}
+function estadoLabel(e){
+  return e==='OPERATIVO'?'OPERATIVO':e==='FALLA'?'EN FALLA':e==='MANTENCION'?'MANTENCIÓN':'N/D';
+}
+async function renderEquiposEnProyecto(projId, equipos, canEdit){
+  const container = document.getElementById('equipos-proj-'+projId);
+  if(!container) return;
+  container.innerHTML = '';
+  const lista = (equipos&&equipos.length) ? equipos : equiposDefault();
+  lista.forEach((eq,idx)=>{
+    const card = document.createElement('div');
+    card.className = 'equipo-card';
+    const nom = document.createElement('div');
+    nom.className = 'equipo-nombre';
+    nom.textContent = eq.nombre;
+    const btns = document.createElement('div');
+    btns.className = 'equipo-estado';
+    ['OPERATIVO','FALLA','MANTENCION'].forEach(est=>{
+      const b = document.createElement('button');
+      b.className = 'equipo-estado-btn'+(eq.estado===est?' activo-'+est:'');
+      b.textContent = est==='OPERATIVO'?'OP':est==='FALLA'?'FALLA':'MANT';
+      b.title = estadoLabel(est);
+      if(canEdit){
+        b.onclick = async(e)=>{
+          e.stopPropagation();
+          lista[idx].estado = est;
+          await saveEquiposProj(projId, lista);
+          renderEquiposEnProyecto(projId, lista, canEdit);
+          renderEquiposDash();
+        };
+      } else { b.disabled=true; b.style.opacity='0.5'; }
+      btns.appendChild(b);
+    });
+    const obs = document.createElement('textarea');
+    obs.className = 'equipo-obs';
+    obs.rows = 2;
+    obs.placeholder = 'Observación...';
+    obs.value = eq.obs||'';
+    obs.disabled = !canEdit;
+    if(canEdit){
+      obs.onblur = async()=>{
+        lista[idx].obs = obs.value;
+        await saveEquiposProj(projId, lista);
+      };
+    }
+    card.appendChild(nom);
+    card.appendChild(btns);
+    card.appendChild(obs);
+    container.appendChild(card);
+  });
+}
+async function saveEquiposProj(projId, equipos){
+  const projects = await gP();
+  const p = projects.find(x=>x.id===projId);
+  if(!p) return;
+  p.equipos = equipos;
+  await saveOneP(p);
+}
+async function renderEquiposDash(){
+  const projects = await gP();
+  const panel = document.getElementById('equiposDash');
+  const dash   = document.getElementById('equiposDashGrid');
+  if(!projects.length){ if(panel) panel.style.display='none'; return; }
+  if(panel) panel.style.display='block';
+  dash.innerHTML='';
+  EQUIPOS_LISTA.forEach(nombre=>{
+    const estados = projects.map(p=>{
+      const eq=(p.equipos&&p.equipos.length?p.equipos:equiposDefault()).find(e=>e.nombre===nombre);
+      return eq?eq.estado:'ND';
+    });
+    let worst='ND';
+    if(estados.includes('FALLA'))       worst='FALLA';
+    else if(estados.includes('MANTENCION')) worst='MANTENCION';
+    else if(estados.includes('OPERATIVO'))  worst='OPERATIVO';
+    const card=document.createElement('div');
+    card.className='equipo-dash-card '+estadoClase(worst);
+    card.innerHTML='<div class="equipo-dash-nombre">'+nombre+'</div>'
+      +'<div class="equipo-dash-estado">'+estadoLabel(worst)+'</div>';
+    dash.appendChild(card);
+  });
+}
+
+// ── EXPORTAR EXCEL ────────────────────────────────────────────────────────────
+async function exportarExcel(){
+  if(typeof XLSX==='undefined'){alert('Librería Excel no cargada. Intenta en un momento.');return;}
+  const projects=await gP();
+  if(!projects.length){alert('No hay proyectos para exportar.');return;}
+  const wb=XLSX.utils.book_new();
+  // Hoja 1: Proyectos
+  const res=[['#','CÓDIGO','PROYECTO','ARTEFACTO','TIPO','RESPONSABLE','ESTADO','INICIO','FIN EST.','AVANCE %','TAREAS']];
+  projects.forEach((p,i)=>{
+    const t=p.tareas||[],done=t.filter(x=>x.done).length;
+    const pct=t.length>0?Math.round(done/t.length*100):(p.log&&p.log.length?p.log[p.log.length-1].pct:0);
+    res.push([i+1,p.code,p.nombre,p.artefacto,p.tipo,p.responsable,
+      p.estado.replace('_',' '),p.inicio,p.fin,pct+'%',
+      t.length>0?done+'/'+t.length:'-']);
+  });
+  const ws1=XLSX.utils.aoa_to_sheet(res);
+  ws1['!cols']=[4,8,28,20,18,18,14,12,12,10,14].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws1,'Proyectos');
+  // Hoja 2: Avances
+  const av=[['PROYECTO','SEMANA','FECHA','% AVANCE','DESCRIPCIÓN']];
+  projects.forEach(p=>(p.log||[]).forEach(l=>av.push([p.nombre,l.sem,l.fecha||'',l.pct+'%',l.texto||''])));
+  if(av.length>1){const ws2=XLSX.utils.aoa_to_sheet(av);ws2['!cols']=[28,12,12,10,50].map(w=>({wch:w}));XLSX.utils.book_append_sheet(wb,ws2,'Avances');}
+  // Hoja 3: Tareas
+  const ta=[['PROYECTO','TAREA','ESTADO']];
+  projects.forEach(p=>(p.tareas||[]).forEach(t=>ta.push([p.nombre,t.texto,t.done?'COMPLETADA':'PENDIENTE'])));
+  if(ta.length>1){const ws3=XLSX.utils.aoa_to_sheet(ta);ws3['!cols']=[28,50,14].map(w=>({wch:w}));XLSX.utils.book_append_sheet(wb,ws3,'Tareas');}
+  // Hoja 4: Equipos
+  const eq=[['PROYECTO','EQUIPO','ESTADO','OBSERVACIÓN']];
+  projects.forEach(p=>{const eqs=p.equipos&&p.equipos.length?p.equipos:equiposDefault();eqs.forEach(e=>eq.push([p.nombre,e.nombre,estadoLabel(e.estado),e.obs||'']));});
+  if(eq.length>1){const ws4=XLSX.utils.aoa_to_sheet(eq);ws4['!cols']=[28,24,14,40].map(w=>({wch:w}));XLSX.utils.book_append_sheet(wb,ws4,'Equipos');}
+  XLSX.writeFile(wb,'Carenas_CERMAQ_'+new Date().toISOString().split('T')[0]+'.xlsx');
+}
+
+// ── EXPORTAR PDF ──────────────────────────────────────────────────────────────
+async function exportarPDF(){
+  if(!window.jspdf){alert('Librería PDF no cargada. Intenta en un momento.');return;}
+  const projects=await gP();
+  if(!projects.length){alert('No hay proyectos para exportar.');return;}
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  const fecha=new Date().toLocaleDateString('es-CL');
+  doc.setFillColor(10,22,40);doc.rect(0,0,297,20,'F');
+  doc.setTextColor(0,180,216);doc.setFontSize(14);doc.setFont('helvetica','bold');
+  doc.text('CARENAS ARTEFACTOS NAVALES — CERMAQ',14,13);
+  doc.setTextColor(106,138,170);doc.setFontSize(8);doc.text('Generado: '+fecha,250,13);
+  let y=28;
+  // Proyectos
+  doc.setTextColor(0,180,216);doc.setFontSize(9);doc.setFont('helvetica','bold');doc.text('RESUMEN DE PROYECTOS',14,y);y+=4;
+  const rows=projects.map(p=>{
+    const t=p.tareas||[],done=t.filter(x=>x.done).length;
+    const pct=t.length>0?Math.round(done/t.length*100):(p.log&&p.log.length?p.log[p.log.length-1].pct:0);
+    return[p.code,p.nombre,p.artefacto,p.responsable,p.estado.replace('_',' '),p.inicio,p.fin||'-',pct+'%'];
+  });
+  doc.autoTable({startY:y,head:[['CÓD','PROYECTO','ARTEFACTO','RESPONSABLE','ESTADO','INICIO','FIN EST.','AVANCE']],body:rows,theme:'grid',
+    headStyles:{fillColor:[13,31,60],textColor:[0,180,216],fontSize:7,fontStyle:'bold'},
+    bodyStyles:{fontSize:7,textColor:[212,224,240],fillColor:[10,22,40]},
+    alternateRowStyles:{fillColor:[15,38,68]},
+    columnStyles:{0:{cellWidth:12},1:{cellWidth:55},2:{cellWidth:38},3:{cellWidth:32},4:{cellWidth:20},5:{cellWidth:20},6:{cellWidth:20},7:{cellWidth:15}},
+    margin:{left:14,right:14}});
+  y=doc.lastAutoTable.finalY+10;
+  // Avances
+  const conLog=projects.filter(p=>p.log&&p.log.length>0);
+  if(conLog.length>0){
+    if(y>170){doc.addPage();y=20;}
+    doc.setTextColor(0,180,216);doc.setFontSize(9);doc.setFont('helvetica','bold');doc.text('REGISTRO DE AVANCES SEMANALES',14,y);y+=4;
+    const avR=[];conLog.forEach(p=>(p.log||[]).forEach(l=>avR.push([p.nombre,l.sem,l.fecha||'',l.pct+'%',l.texto||''])));
+    doc.autoTable({startY:y,head:[['PROYECTO','SEMANA','FECHA','AVANCE','DESCRIPCIÓN']],body:avR,theme:'grid',
+      headStyles:{fillColor:[13,31,60],textColor:[0,180,216],fontSize:7,fontStyle:'bold'},
+      bodyStyles:{fontSize:7,textColor:[212,224,240],fillColor:[10,22,40]},
+      alternateRowStyles:{fillColor:[15,38,68]},
+      columnStyles:{0:{cellWidth:50},1:{cellWidth:22},2:{cellWidth:22},3:{cellWidth:16},4:{cellWidth:153}},
+      margin:{left:14,right:14}});
+    y=doc.lastAutoTable.finalY+10;
+  }
+  // Equipos
+  if(y>160){doc.addPage();y=20;}
+  doc.setTextColor(0,180,216);doc.setFontSize(9);doc.setFont('helvetica','bold');doc.text('ESTADO DE EQUIPOS',14,y);y+=4;
+  const eqR=[];projects.forEach(p=>{const eqs=p.equipos&&p.equipos.length?p.equipos:equiposDefault();eqs.forEach(e=>eqR.push([p.nombre,e.nombre,estadoLabel(e.estado),e.obs||'']));});
+  doc.autoTable({startY:y,head:[['PROYECTO','EQUIPO','ESTADO','OBSERVACIÓN']],body:eqR,theme:'grid',
+    headStyles:{fillColor:[13,31,60],textColor:[0,180,216],fontSize:7,fontStyle:'bold'},
+    bodyStyles:{fontSize:7,textColor:[212,224,240],fillColor:[10,22,40]},
+    alternateRowStyles:{fillColor:[15,38,68]},
+    columnStyles:{0:{cellWidth:55},1:{cellWidth:45},2:{cellWidth:25},3:{cellWidth:138}},
+    margin:{left:14,right:14},
+    didParseCell:(d)=>{if(d.column.index===2&&d.section==='body'){const v=d.cell.raw;if(v==='OPERATIVO')d.cell.styles.textColor=[39,174,96];if(v==='EN FALLA')d.cell.styles.textColor=[231,76,60];if(v==='MANTENCIÓN')d.cell.styles.textColor=[243,156,18];}}});
+  // Paginado
+  const tp=doc.internal.getNumberOfPages();
+  for(let i=1;i<=tp;i++){doc.setPage(i);doc.setTextColor(106,138,170);doc.setFontSize(7);doc.text('Página '+i+' de '+tp+' — CERMAQ Sistema de Seguimiento de Carenas',14,205);}
+  doc.save('Carenas_CERMAQ_'+new Date().toISOString().split('T')[0]+'.pdf');
+}
+
+// ── EXPORTAR / IMPORTAR JSON ──────────────────────────────────────────────────
+async function exportarDatos(){
+  const proyectos=await gP(),documentos=await gD(),usuarios=await gU();
+  const backup={version:1,fecha:new Date().toISOString(),proyectos,documentos,usuarios};
+  const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='cermaq_backup_'+new Date().toISOString().split('T')[0]+'.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href);
+}
+async function importarDatos(input){
+  const file=input.files[0];if(!file)return;
+  const msg=document.getElementById('importMsg');
+  try{
+    const data=JSON.parse(await file.text());
+    if(!data.proyectos||!data.documentos){alert('Archivo inválido.');return;}
+    msg.textContent='Importando...';msg.style.color='var(--cyan)';msg.style.display='inline';
+    for(const p of data.proyectos) await saveOneP(p);
+    for(const d of data.documentos) await saveOneD(d);
+    if(data.usuarios){const ex=await gU();for(const u of data.usuarios)if(!ex.find(e=>e.login===u.login))await saveOneU(u);}
+    msg.textContent='✓ '+data.proyectos.length+' proyectos, '+data.documentos.length+' documentos importados';
+    msg.style.color='var(--green)';
+    await initApp();
+  }catch(e){msg.textContent='⚠ Error: '+e.message;msg.style.color='var(--rust)';msg.style.display='inline';}
+  input.value='';
 }
 
 function closeModal(t) {
