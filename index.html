@@ -952,23 +952,6 @@ function applyRoleUI(){const e=currentUser.rol!=='VISOR',a=currentUser.rol==='AD
 // 4. ARCHIVOS
 // renderFile → handleFile → abrirArchivo → fixDocs → initUpload
 
-function setModoDoc(modo) {
-  const mArchivo = document.getElementById('modoArchivo');
-  const mUrl     = document.getElementById('modoUrl');
-  const btnA     = document.getElementById('btnModoArchivo');
-  const btnU     = document.getElementById('btnModoUrl');
-  if (modo === 'archivo') {
-    mArchivo.style.display = 'block';
-    mUrl.style.display     = 'none';
-    btnA.className = 'btn btn-primary btn-sm';
-    btnU.className = 'btn btn-ghost btn-sm';
-  } else {
-    mArchivo.style.display = 'none';
-    mUrl.style.display     = 'block';
-    btnA.className = 'btn btn-ghost btn-sm';
-    btnU.className = 'btn btn-primary btn-sm';
-  }
-}
 
 function abrirArchivo(url){
   if(!url){ alert('Este documento no tiene URL disponible.'); return; }
@@ -981,7 +964,7 @@ function abrirArchivo(url){
   document.body.removeChild(a);
 }
 
-async function uploadToCloudinary(file){return new Promise((resolve,reject)=>{const fd=new FormData();fd.append('file',file);fd.append('upload_preset',CLD_PRESET);fd.append('folder',CLD_FOLDER);const xhr=new XMLHttpRequest();xhr.open('POST',CLD_URL);xhr.upload.onprogress=e=>{if(e.lengthComputable)document.getElementById('uploadProgressFill').style.width=Math.round((e.loaded/e.total)*100)+'%';};xhr.onload=()=>{if(xhr.status===200){const r=JSON.parse(xhr.responseText);resolve({url:r.secure_url,size:fz(file.size)});}else{try{const e=JSON.parse(xhr.responseText);reject(new Error(e.error?.message||'Error al subir'));}catch{reject(new Error('Error al subir'));}}};xhr.onerror=()=>reject(new Error('Error de red'));xhr.send(fd);});}
+async function uploadToCloudinary(file){return new Promise((resolve,reject)=>{const fd=new FormData();fd.append('file',file);fd.append('upload_preset',CLD_PRESET);fd.append('folder',CLD_FOLDER);const xhr=new XMLHttpRequest();xhr.open('POST',CLD_URL);xhr.upload.onprogress=e=>{if(e.lengthComputable)const pf=document.getElementById('uploadProgressFill'); if(pf) pf.style.width=Math.round((e.loaded/e.total)*100)+'%';};xhr.onload=()=>{if(xhr.status===200){const r=JSON.parse(xhr.responseText);resolve({url:r.secure_url,size:fz(file.size)});}else{try{const e=JSON.parse(xhr.responseText);reject(new Error(e.error?.message||'Error al subir'));}catch{reject(new Error('Error al subir'));}}};xhr.onerror=()=>reject(new Error('Error de red'));xhr.send(fd);});}
 
 async function saveDocumento(){
   const projId = document.getElementById('docProy').value;
@@ -1030,16 +1013,7 @@ function fixDocs() {
 
 
 
-function initUpload() {
-  const uz = document.getElementById('uploadZone');
-  uz.addEventListener('dragover', e => { e.preventDefault(); uz.classList.add('dragover'); });
-  uz.addEventListener('dragleave', () => uz.classList.remove('dragover'));
-  uz.addEventListener('drop', e => {
-    e.preventDefault(); uz.classList.remove('dragover');
-    const f = e.dataTransfer.files[0];
-    if (f) { selectedFile = f; document.getElementById('uploadZone').textContent = f.name; }
-  });
-}
+function initUpload(){}
 
 
 
@@ -1562,7 +1536,7 @@ async function renderTabEquipos(){
   tbody.id = 'equiposTbody';
 
   projects.forEach(p=>{
-    const equipos = (p.equipos&&p.equipos.length) ? p.equipos : equiposDefault();
+    const equipos = mergeEquipos(p.equipos);
     const open = expandedEquipos[p.id];
 
     // Resumen de estados de equipos para la fila
@@ -1628,10 +1602,10 @@ async function renderTabEquipos(){
         if(canEdit){
           const sel = document.createElement('select');
           sel.style.cssText = 'font-family:var(--mono);font-size:0.65rem;background:var(--navy);border:1px solid var(--border);color:var(--text);padding:0.25rem 0.4rem;width:100%';
-          [['ND','N/D'],['OPERATIVO','OPERATIVO'],['FALLA','EN FALLA'],['MANTENCION','MANTENCIÓN']].forEach(([val,lbl])=>{
+          ESTADOS_EQUIPO.forEach(est=>{
             const o=document.createElement('option');
-            o.value=val;o.textContent=lbl;
-            if(eq.estado===val)o.selected=true;
+            o.value=est.val;o.textContent=est.label+' ('+est.pct+'%)';
+            if(eq.estado===est.val)o.selected=true;
             sel.appendChild(o);
           });
           sel.onchange=async()=>{ equipos[idx].estado=sel.value; await saveEquiposProj(p.id,equipos); await renderTabEquipos(); };
@@ -1693,7 +1667,7 @@ async function exportarExcelEquipos(){
   const wb = XLSX.utils.book_new();
   const rows = [['PROYECTO','ARTEFACTO','ESTADO PROYECTO','EQUIPO / SISTEMA','ESTADO EQUIPO','RESPONSABLE','OBSERVACIÓN']];
   projects.forEach(p=>{
-    const equipos = (p.equipos&&p.equipos.length) ? p.equipos : equiposDefault();
+    const equipos = mergeEquipos(p.equipos);
     equipos.forEach(eq=>{
       rows.push([p.nombre, p.artefacto, p.estado.replace('_',' '),
         eq.nombre, estadoLabel(eq.estado), eq.responsable||'', eq.obs||'']);
@@ -2000,6 +1974,18 @@ const EQUIPOS_LISTA = [
 function equiposDefault(){
   return EQUIPOS_LISTA.map(n=>({nombre:n,estado:'NO_GESTIONADO',obs:'',responsable:''}));
 }
+// Completa equipos guardados con cualquier equipo nuevo que no esté aún
+function mergeEquipos(saved){
+  if(!saved||!saved.length) return equiposDefault();
+  const result = [...saved];
+  EQUIPOS_LISTA.forEach(nombre=>{
+    if(!result.find(e=>e.nombre===nombre)){
+      result.push({nombre,estado:'NO_GESTIONADO',obs:'',responsable:''});
+    }
+  });
+  // Ordenar según EQUIPOS_LISTA
+  return EQUIPOS_LISTA.map(nombre=>result.find(e=>e.nombre===nombre)).filter(Boolean);
+}
 // Estados equipos con ponderación
 const ESTADOS_EQUIPO = [
   {val:'NO_GESTIONADO', label:'NO (SIN GESTIONAR)', pct:0,  cls:'e-nd'},
@@ -2027,7 +2013,7 @@ async function renderEquiposEnProyecto(projId, equipos, canEdit){
   const container = document.getElementById('equipos-proj-'+projId);
   if(!container) return;
   container.innerHTML = '';
-  const lista = (equipos&&equipos.length) ? equipos : equiposDefault();
+  const lista = mergeEquipos(equipos);
   lista.forEach((eq,idx)=>{
     const card = document.createElement('div');
     card.className = 'equipo-card';
@@ -2092,29 +2078,7 @@ async function saveEquiposProj(projId, equipos){
   p.equipos = equipos;
   await saveOneP(p);
 }
-async function renderEquiposDash(){
-  const projects = await gP();
-  const panel = document.getElementById('equiposDash');
-  const dash   = document.getElementById('equiposDashGrid');
-  if(!projects.length){ if(panel) panel.style.display='none'; return; }
-  if(panel) panel.style.display='block';
-  dash.innerHTML='';
-  EQUIPOS_LISTA.forEach(nombre=>{
-    const estados = projects.map(p=>{
-      const eq=(p.equipos&&p.equipos.length?p.equipos:equiposDefault()).find(e=>e.nombre===nombre);
-      return eq?eq.estado:'ND';
-    });
-    let worst='ND';
-    if(estados.includes('FALLA'))       worst='FALLA';
-    else if(estados.includes('MANTENCION')) worst='MANTENCION';
-    else if(estados.includes('OPERATIVO'))  worst='OPERATIVO';
-    const card=document.createElement('div');
-    card.className='equipo-dash-card '+estadoClase(worst);
-    card.innerHTML='<div class="equipo-dash-nombre">'+nombre+'</div>'
-      +'<div class="equipo-dash-estado">'+estadoLabel(worst)+'</div>';
-    dash.appendChild(card);
-  });
-}
+async function renderEquiposDash(){}
 
 // ── EXPORTAR EXCEL ────────────────────────────────────────────────────────────
 async function exportarExcel(){
@@ -2144,7 +2108,7 @@ async function exportarExcel(){
   if(ta.length>1){const ws3=XLSX.utils.aoa_to_sheet(ta);ws3['!cols']=[28,50,14].map(w=>({wch:w}));XLSX.utils.book_append_sheet(wb,ws3,'Tareas');}
   // Hoja 4: Equipos
   const eq=[['PROYECTO','EQUIPO','ESTADO','OBSERVACIÓN']];
-  projects.forEach(p=>{const eqs=p.equipos&&p.equipos.length?p.equipos:equiposDefault();eqs.forEach(e=>eq.push([p.nombre,e.nombre,estadoLabel(e.estado),e.obs||'']));});
+  projects.forEach(p=>{const eqs=mergeEquipos(p.equipos);eqs.forEach(e=>eq.push([p.nombre,e.nombre,estadoLabel(e.estado),e.obs||'']));});
   if(eq.length>1){const ws4=XLSX.utils.aoa_to_sheet(eq);ws4['!cols']=[28,24,14,40].map(w=>({wch:w}));XLSX.utils.book_append_sheet(wb,ws4,'Equipos');}
   XLSX.writeFile(wb,'Carenas_CERMAQ_'+new Date().toISOString().split('T')[0]+'.xlsx');
 }
@@ -2193,7 +2157,7 @@ async function exportarPDF(){
   // Equipos
   if(y>160){doc.addPage();y=20;}
   doc.setTextColor(0,180,216);doc.setFontSize(9);doc.setFont('helvetica','bold');doc.text('ESTADO DE EQUIPOS',14,y);y+=4;
-  const eqR=[];projects.forEach(p=>{const eqs=p.equipos&&p.equipos.length?p.equipos:equiposDefault();eqs.forEach(e=>eqR.push([p.nombre,e.nombre,estadoLabel(e.estado),e.obs||'']));});
+  const eqR=[];projects.forEach(p=>{const eqs=mergeEquipos(p.equipos);eqs.forEach(e=>eqR.push([p.nombre,e.nombre,estadoLabel(e.estado),e.obs||'']));});
   doc.autoTable({startY:y,head:[['PROYECTO','EQUIPO','ESTADO','OBSERVACIÓN']],body:eqR,theme:'grid',
     headStyles:{fillColor:[13,31,60],textColor:[0,180,216],fontSize:7,fontStyle:'bold'},
     bodyStyles:{fontSize:7,textColor:[212,224,240],fillColor:[10,22,40]},
@@ -2247,17 +2211,7 @@ function closeModal(t) {
   if (el) el.classList.remove('open');
 }
 
-function onFileSelect(input) {
-  const f = input.files[0];
-  if (!f) return;
-  selectedFile = f;
-  const zone = document.getElementById('uploadZone');
-  const msg  = document.getElementById('fileSelectedMsg');
-  const text = document.getElementById('uploadZoneText');
-  if (text) text.textContent = f.name;
-  else if (zone) zone.textContent = f.name;
-  if (msg) { msg.textContent = '📎 ' + f.name; msg.style.display = 'block'; }
-}
+function onFileSelect(input){}
 
 // 7. EVENTOS
 function globalClickHandler(e) {
