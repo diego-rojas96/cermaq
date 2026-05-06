@@ -1090,13 +1090,13 @@ async function renderProyectos(){
     tr.innerHTML=`
       <td style="color:var(--muted);font-size:0.65rem;width:18px">${open?'▼':'▶'}</td>
       <td style="font-family:var(--mono);font-size:0.7rem;color:var(--cyan)">#${p.code}</td>
-      <td style="font-weight:600">${p.artefacto}<div style="font-size:0.7rem;color:var(--muted);font-weight:400">${p.nombre}</div></td>
-      <td></td>
+      <td style="font-weight:600">${p.nombre}</td>
+      <td style="font-family:var(--mono);font-size:0.7rem;color:var(--muted)">${p.artefacto}</td>
       <td style="font-size:0.78rem">${p.responsable}</td>
       <td>
         <div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:${lp}%;background:${col}"></div></div>
         <div class="prog-txt">Tareas: ${lp}%${tareas.length?' ('+tareas.filter(t=>t.done).length+'/'+tareas.length+')':''}</div></div>
-        ${(p.equipos&&p.equipos.length)?'<div style="margin-top:3px;display:flex;align-items:center;gap:5px"><div style="flex:1;height:3px;background:var(--steel);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+calcPctEquipos(p.equipos)+'%;background:var(--cyan)"></div></div><span style="font-family:var(--mono);font-size:0.58rem;color:var(--cyan)">Eq: '+calcPctEquipos(p.equipos)+'%</span></div>':''}
+        ${(p.equipos&&p.equipos.length)?'<div style="margin-top:3px;display:flex;align-items:center;gap:5px"><div style="flex:1;height:3px;background:var(--steel);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+calcPctEquipos(p.equipos)+'%;background:var(--cyan)"></div></div><span style="font-family:var(--mono);font-size:0.58rem;color:var(--cyan)">EQUIPOS: '+calcPctEquipos(p.equipos)+'%</span></div>':''}
       </td>
       <td><span class="pill pill-${p.estado}">${p.estado.replace('_',' ')}</span></td>
       <td style="font-family:var(--mono);font-size:0.65rem;color:var(--muted)">${p.inicio}</td>
@@ -1557,8 +1557,8 @@ async function renderTabEquipos(){
     tr.innerHTML = `
       <td style="color:var(--muted);font-size:0.65rem">${open?'▼':'▶'}</td>
       <td style="font-family:var(--mono);font-size:0.7rem;color:var(--cyan)">#${p.code}</td>
-      <td style="font-weight:600">${p.artefacto}<div style="font-size:0.7rem;color:var(--muted);font-weight:400">${p.nombre}</div></td>
-      <td></td>
+      <td style="font-weight:600">${p.nombre}</td>
+      <td style="font-family:var(--mono);font-size:0.7rem;color:var(--muted)">${p.artefacto}</td>
       <td style="font-size:0.78rem">${p.responsable}</td>
       <td><span class="pill pill-${p.estado}" style="font-size:0.62rem">${p.estado.replace('_',' ')}</span></td>
         <td>
